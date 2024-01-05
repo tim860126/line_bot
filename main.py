@@ -5,6 +5,7 @@ from linebot.exceptions import InvalidSignatureError
 from linebot.models import MessageEvent, TextMessage, TextSendMessage
 from linebot.exceptions import LineBotApiError
 import config
+import g4f
 
 app = Flask(__name__)
 line_bot_api = LineBotApi(config.LINE_CHANNEL_ACCESS_TOKEN)
@@ -28,9 +29,17 @@ def callback():
 
 @handler.add(MessageEvent, message=TextMessage)
 def pretty_echo(event):
-    textcontent=""
-    content=""
     if event.source.user_id != "Udeadbeefdeadbeefdeadbeefdeadbeef":
+        response = g4f.ChatCompletion.create(
+            model="gpt-3.5-turbo",
+            provider=g4f.Provider.Bing,
+            messages=[{"role": "user", "content": event.message.text}],
+            stream=True,
+        )
+        re_msg = ""
+        for message in response:
+            re_msg = re_msg + message 
+    
         line_bot_api.reply_message(
             event.reply_token,
             TextSendMessage(text=event.message.text)
